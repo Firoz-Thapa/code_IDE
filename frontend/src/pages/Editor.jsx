@@ -14,7 +14,7 @@ const Editior = () => {
   const [cssCode, setCssCode] = useState("body { background-color: #f4f4f4; }");
   const [jsCode, setJsCode] = useState("// some comment");
 
-  // Extract projectID from URL using useParams
+
   const { projectID } = useParams();
 
   const changeTheme = () => {
@@ -56,7 +56,7 @@ const Editior = () => {
       },
       body: JSON.stringify({
         userId: localStorage.getItem("userId"),
-        projId: projectID // Use projectID here
+        projId: projectID 
       })
     })
       .then(res => res.json())
