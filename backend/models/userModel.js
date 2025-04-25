@@ -1,10 +1,34 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://127.0.0.1:27017/codeIDE');
+
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-const userModel = mongoose.model('User', userSchema);
-module.exports = userModel;
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

@@ -10,7 +10,10 @@ router.post('/createProject', async (req, res) => {
         const newProject = new Project({
             title,
             userId,
-            date: new Date(), // Add current date
+            date: new Date(),
+            htmlCode: "<h1>Hello World</h1>", // Default HTML code
+            cssCode: "body { background-color: #f4f4f4; }", // Default CSS code
+            jsCode: "// JavaScript code here" // Default JS code
         });
 
         const savedProject = await newProject.save();
@@ -31,6 +34,44 @@ router.post('/getProjects', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Error fetching projects' });
+    }
+});
+
+// Get a specific project
+router.post('/getProject', async (req, res) => {
+    const { userId, projId } = req.body;
+
+    try {
+        const project = await Project.findOne({ _id: projId, userId });
+        if (!project) {
+            return res.status(404).json({ success: false, message: 'Project not found' });
+        }
+        res.json({ success: true, project });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error fetching project' });
+    }
+});
+
+// Update a project
+router.post('/updateProject', async (req, res) => {
+    const { userId, projId, htmlCode, cssCode, jsCode } = req.body;
+
+    try {
+        const updatedProject = await Project.findOneAndUpdate(
+            { _id: projId, userId },
+            { htmlCode, cssCode, jsCode },
+            { new: true }
+        );
+        
+        if (!updatedProject) {
+            return res.status(404).json({ success: false, message: 'Project not found' });
+        }
+        
+        res.json({ success: true, message: 'Project updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error updating project' });
     }
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import logo from "../images/logo.png"
 import { Link, useNavigate } from 'react-router-dom';
 import image from "../images/authPageSide.png";
@@ -16,7 +16,7 @@ const SignUp = () => {
 
   const submitForm = (e) => {
     e.preventDefault();
-    fetch(api_base_url + "/signUp",{
+    fetch(`${api_base_url}/signUp`,{
       mode: "cors",
       method: "POST",
       headers: {
@@ -37,6 +37,10 @@ const SignUp = () => {
         setError(data.message);
       }
     })
+    .catch(error => {
+      console.error("Error during signup:", error);
+      setError("Error creating account. Please try again.");
+    });
   }
 
   return (

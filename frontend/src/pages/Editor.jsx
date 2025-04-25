@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import EditiorNavbar from '../components/EditiorNavbar';
 import Editor from '@monaco-editor/react';
 import { MdLightMode } from 'react-icons/md';
@@ -48,7 +48,7 @@ const Editior = () => {
   }, [htmlCode, cssCode, jsCode]);
 
   useEffect(() => {
-    fetch(api_base_url + "/getProject", {
+    fetch(`${api_base_url}/projects/getProject`, {
       mode: "cors",
       method: "POST",
       headers: {
@@ -61,9 +61,16 @@ const Editior = () => {
     })
       .then(res => res.json())
       .then(data => {
-        setHtmlCode(data.project.htmlCode);
-        setCssCode(data.project.cssCode);
-        setJsCode(data.project.jsCode);
+        if (data.success) {
+          setHtmlCode(data.project.htmlCode || "<h1>Hello World</h1>");
+          setCssCode(data.project.cssCode || "body { background-color: #f4f4f4; }");
+          setJsCode(data.project.jsCode || "// JavaScript code here");
+        } else {
+          console.error("Error loading project:", data.message);
+        }
+      })
+      .catch(error => {
+        console.error("Failed to fetch project data:", error);
       });
   }, [projectID]);
 
@@ -71,7 +78,7 @@ const Editior = () => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 's') {
         event.preventDefault(); 
-        fetch(api_base_url + "/updateProject", {
+        fetch(`${api_base_url}/projects/updateProject`, {
           mode: "cors",
           method: "POST",
           headers: {
@@ -90,8 +97,12 @@ const Editior = () => {
           if (data.success) {
             alert("Project saved successfully");
           } else {
-            alert("Something went wrong.");
+            alert("Something went wrong: " + data.message);
           }
+        })
+        .catch(error => {
+          console.error("Error saving project:", error);
+          alert("Failed to save project. Please try again.");
         });
       }
     };

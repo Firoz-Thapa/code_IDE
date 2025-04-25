@@ -13,5 +13,5 @@ export const removeClass = (el, className) => {
   }
 };
 
-// Base URL for your API
+// Base URL for your API - make sure this matches your backend server port
 export const api_base_url = "http://localhost:3000";

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Home from './pages/Home';
@@ -8,15 +8,37 @@ import Login from './pages/Login';
 import Editior from './pages/Editor';
 
 const App = () => {
-  const isLoggedIn = localStorage.getItem("isLoggedIn"); // Check if the user is logged in
+  // Use state to trigger re-render when auth status changes
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("isLoggedIn") === "true");
+
+  // Listen for changes to localStorage
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const loginStatus = localStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(loginStatus);
+      console.log("Auth status checked, isLoggedIn:", loginStatus);
+    };
+
+    // Check initially
+    checkLoginStatus();
+
+    // Set up event listener for storage changes (in case of login in another tab)
+    window.addEventListener('storage', checkLoginStatus);
+
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+    };
+  }, []);
+
+  console.log("App rendering, isLoggedIn:", isLoggedIn);
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path='/' element={isLoggedIn ? <Home /> : <Navigate to="/login" />} />
         <Route path='/signUp' element={<SignUp />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/editor/:projectID' element={isLoggedIn ? <Editior /> : <Navigate to="/login" />} /> {/* Fixed typo in path */}
+        <Route path='/login' element={isLoggedIn ? <Navigate to="/" /> : <Login />} />
+        <Route path='/editor/:projectID' element={isLoggedIn ? <Editior /> : <Navigate to="/login" />} />
         <Route path="*" element={isLoggedIn ? <NoPage /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

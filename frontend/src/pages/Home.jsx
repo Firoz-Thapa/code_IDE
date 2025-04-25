@@ -7,11 +7,20 @@ import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [data, setData] = useState(null);
-  const [setError] = useState("");
+  const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [projTitle, setProjTitle] = useState("");
   const navigate = useNavigate();
   const [isCreateModelShow, setIsCreateModelShow] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [isGridLayout, setIsGridLayout] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Allow Navbar to signal when logging out
+  const handleLogout = () => {
+    setIsLoggingOut(true);
+  };
 
   const filteredData = data
     ? data.filter((item) =>
@@ -24,6 +33,13 @@ const Home = () => {
     if (projTitle === "") {
       alert("Please Enter Project Title");
     } else {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        alert("User not logged in");
+        navigate("/login");
+        return;
+      }
+
       fetch(`${api_base_url}/projects/createProject`, {
         method: "POST",
         headers: {
@@ -31,7 +47,7 @@ const Home = () => {
         },
         body: JSON.stringify({
           title: projTitle,
-          userId: localStorage.getItem("userId"),
+          userId: userId,
         }),
       })
         .then((res) => {
@@ -58,17 +74,36 @@ const Home = () => {
   };
 
   const getProj = useCallback(() => {
+    // Skip data fetching if logging out
+    if (isLoggingOut) return;
+    
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      // Only log if not in logout process
+      if (!isLoggingOut) {
+        console.log("No userId found in localStorage");
+      }
+      setLoading(false);
+      return;
+    }
+
     fetch(`${api_base_url}/projects/getProjects`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userId: localStorage.getItem("userId"),
+        userId: userId,
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Server responded with status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
+        setLoading(false);
         if (data.success) {
           setData(data.projects);
         } else {
@@ -76,43 +111,63 @@ const Home = () => {
         }
       })
       .catch((error) => {
+        setLoading(false);
         console.error("Error fetching projects:", error);
         setError("Failed to fetch projects.");
       });
-  }, [setError]);
+  }, [isLoggingOut]);
 
   useEffect(() => {
     getProj();
   }, [getProj]);
 
-  const [userData, setUserData] = useState(null);
-
   useEffect(() => {
+    // Skip data fetching if logging out
+    if (isLoggingOut) return;
+    
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      // Only log if not in logout process
+      if (!isLoggingOut) {
+        console.log("No userId found in localStorage");
+      }
+      return;
+    }
+
     fetch(`${api_base_url}/users/getUserDetails`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userId: localStorage.getItem("userId"),
+        userId: userId,
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Server responded with status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data.success) {
           setUserData(data.user);
+        } else {
+          console.error("Failed to fetch user details:", data.message);
         }
       })
       .catch((error) => {
         console.error("Error fetching user details:", error);
       });
-  }, []);
-
-  const [isGridLayout, setIsGridLayout] = useState(false);
+  }, [isLoggingOut]);
 
   return (
     <>
-      <Navbar isGridLayout={isGridLayout} setIsGridLayout={setIsGridLayout} />
+      <Navbar 
+        isGridLayout={isGridLayout} 
+        setIsGridLayout={setIsGridLayout} 
+        onLogout={handleLogout}
+      />
       <div className="flex items-center justify-between px-[100px] my-[40px]">
         <h2 className="text-2xl">Hi, {userData ? userData.username : ""} 👋</h2>
         <div className="flex items-center gap-1">
@@ -136,7 +191,9 @@ const Home = () => {
       </div>
 
       <div className="cards">
-        {isGridLayout ? (
+        {loading ? (
+          <div className="px-[100px]">Loading projects...</div>
+        ) : isGridLayout ? (
           <div className="grid px-[100px]">
             {filteredData.length > 0 ? (
               filteredData.map((item, index) => (
@@ -150,7 +207,7 @@ const Home = () => {
           <div className="list px-[100px]">
             {filteredData.length > 0 ? (
               filteredData.map((item, index) => (
-                <ListCard key={index} item={item} date={item.date} />
+                <ListCard key={index} item={item} />
               ))
             ) : (
               <p>No projects found</p>

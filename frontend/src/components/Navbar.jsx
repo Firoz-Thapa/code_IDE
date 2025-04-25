@@ -1,38 +1,64 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import logo from "../images/logo.png";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import { MdLightMode } from "react-icons/md";
 import { BsGridFill } from "react-icons/bs";
 import { api_base_url, toggleClass } from '../helper';
 
-const Navbar = ({ isGridLayout, setIsGridLayout }) => {
-  const navigate = useNavigate();
+const Navbar = ({ isGridLayout, setIsGridLayout, onLogout }) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLightMode, setIsLightMode] = useState(() => {
     // Initialize theme based on localStorage or default to dark
     return localStorage.getItem("theme") === "light";
   });
 
   useEffect(() => {
-    fetch(api_base_url + "/users/getUserDetails", { 
+    // Skip data fetching if logging out
+    if (isLoggingOut) return;
+    
+    const userId = localStorage.getItem("userId");
+    
+    // Check if userId exists
+    if (!userId) {
+      // Only log if not in logout process
+      if (!isLoggingOut) {
+        console.log("No userId found in localStorage");
+      }
+      return;
+    }
+    
+    fetch(`${api_base_url}/users/getUserDetails`, { 
       mode: "cors",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userId: localStorage.getItem("userId")
+        userId: userId
       })
-    }).then(res => res.json()).then(data => {
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
       if (data.success) {
         setData(data.user);
       } else {
         setError(data.message);
       }
+    })
+    .catch(err => {
+      console.error("Error fetching user details:", err);
+      setError("Failed to load user data");
     });
-  }, []);
+  }, [isLoggingOut]);
 
   useEffect(() => {
     // Apply the theme to the document body
@@ -52,10 +78,21 @@ const Navbar = ({ isGridLayout, setIsGridLayout }) => {
   };
 
   const logout = () => {
+    // Set logging out state to prevent further API calls
+    setIsLoggingOut(true);
+    
+    // Notify parent component about logout
+    if (onLogout) {
+      onLogout();
+    }
+    
+    // Clear all auth-related items from localStorage
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
     localStorage.removeItem("isLoggedIn");
-    window.location.reload();
+    
+    // Use direct location change for a full page refresh
+    window.location.href = "/login";
   };
 
   return (
@@ -75,7 +112,7 @@ const Navbar = ({ isGridLayout, setIsGridLayout }) => {
         <button
           onClick={logout}
           className={`btnBlue ${
-            isLightMode ? "!bg-red-500 text-white" : "!bg-red-500 text-black"
+            isLightMode ? "!bg-red-500 text-white" : "!bg-red-500 text-white"
           } min-w-[120px] ml-2 hover:!bg-red-600`}
         >
           Logout
@@ -84,7 +121,7 @@ const Navbar = ({ isGridLayout, setIsGridLayout }) => {
           onClick={() => {
             toggleClass(".dropDownNavbar", "hidden");
           }}
-          name={data ? data.name : ""}
+          name={data ? data.name : "User"}
           size="40"
           round="50%"
           className="cursor-pointer ml-2"
@@ -100,7 +137,7 @@ const Navbar = ({ isGridLayout, setIsGridLayout }) => {
             className="text-[17px]"
             style={{ lineHeight: 1, color: isLightMode ? "#000" : "#fff" }}
           >
-            {data ? data.name : ""}
+            {data ? data.name : "User"}
           </h3>
         </div>
         <i
@@ -123,3 +160,12 @@ const Navbar = ({ isGridLayout, setIsGridLayout }) => {
     </div>
   );
 };
+
+// Add PropTypes validation
+Navbar.propTypes = {
+  isGridLayout: PropTypes.bool.isRequired,
+  setIsGridLayout: PropTypes.func.isRequired,
+  onLogout: PropTypes.func
+};
+
+export default Navbar;

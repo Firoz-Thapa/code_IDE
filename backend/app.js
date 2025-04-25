@@ -4,10 +4,21 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+const mongoose = require('mongoose');
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/codeIDE', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch(err => {
+  console.error('Failed to connect to MongoDB', err);
+});
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
-const projectRouter = require('./routes/project');  // Ensure the correct route is used
+const projectRouter = require('./routes/project');
 
 const app = express();
 
@@ -26,7 +37,7 @@ app.use(cors());
 // Routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/projects', projectRouter);  // Ensure the project route is loaded
+app.use('/projects', projectRouter);
 
 // Catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -35,8 +46,11 @@ app.use(function(req, res, next) {
 
 // Error handler
 app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
   res.status(err.status || 500);
   res.render('error');
 });
