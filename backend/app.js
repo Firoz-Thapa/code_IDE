@@ -1,3 +1,4 @@
+require('dotenv').config();
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -6,15 +7,10 @@ const logger = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/codeIDE', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch(err => {
-  console.error('Failed to connect to MongoDB', err);
-});
+// Connect to MongoDB using the environment variable
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://gyawatmagar:uTIdhWlTqmt7jhKC@code-ide.uzvy06y.mongodb.net/?retryWrites=true&w=majority&appName=Code-IDE')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Failed to connect to MongoDB', err));
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -32,7 +28,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*', // Allow specified frontend or all origins in development
+  credentials: true
+}));
 
 // Routes
 app.use('/', indexRouter);
