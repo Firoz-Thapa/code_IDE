@@ -4,7 +4,6 @@ import "./App.css";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import NoPage from "./pages/NoPage";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Editior from "./pages/Editor";
@@ -21,10 +20,7 @@ const App = () => {
       console.log("Auth status checked, isLoggedIn:", loginStatus);
     };
 
-    // Check initially
     checkLoginStatus();
-
-    // Set up event listener for storage changes (in case of login in another tab)
     window.addEventListener("storage", checkLoginStatus);
 
     return () => {
@@ -60,7 +56,7 @@ const App = () => {
         />
         <Route
           path="*"
-          element={isLoggedIn ? <NoPage /> : <Navigate to="/login" />}
+          element={isLoggedIn ? <Navigate to="/" /> : <Navigate to="/login" />}
         />
       </Routes>
     </BrowserRouter>
