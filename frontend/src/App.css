@@ -114,3 +114,116 @@ body.dark-mode .dropDownNavbar {
   background-color: #1A1919;
   color: #fff;
 }
+
+/* About page styles */
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-content p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+body.light-mode .about-sidebar > div {
+  background-color: #f1f1f1;
+  color: #000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .stat-label {
+  color: #666;
+}
+
+body.light-mode .about-sidebar ul li span:last-child {
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .about-content {
+    flex-direction: column;
+  }
+  
+  .about-text, 
+  .about-sidebar {
+    width: 100%;
+  }
+  
+  .about-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* Contact page styles */
+.contact-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.contact-form textarea {
+  min-height: 120px;
+  font-family: inherit;
+}
+
+.inputBox textarea {
+  color: #fff;
+}
+
+body.light-mode .inputBox textarea {
+  color: #000;
+}
+
+.contact-info .info-item .icon-container {
+  min-width: 20px;
+  text-align: center;
+}
+
+.social-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.light-mode .contact-sidebar > div,
+body.light-mode .contact-form-container .success-message {
+  background-color: #f1f1f1;
+  color: #000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .social-icon {
+  background-color: #e5e5e5;
+}
+
+body.light-mode .contact-sidebar .info-item p,
+body.light-mode .social-links p {
+  color: #666;
+}
+
+body.light-mode .contact-sidebar h4 {
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .contact-content {
+    flex-direction: column;
+  }
+  
+  .contact-form-container, 
+  .contact-sidebar {
+    width: 100%;
+  }
+  
+  .contact-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  .social-icons {
+    justify-content: space-around;
+  }
+}

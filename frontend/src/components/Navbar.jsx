@@ -1,20 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import logo from "../images/logo.png";
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import Avatar from 'react-avatar';
-import { MdLightMode } from "react-icons/md";
-import { BsGridFill } from "react-icons/bs";
-import { api_base_url, toggleClass } from '../helper';
+import { MdLightMode, MdDarkMode } from "react-icons/md";
+import { BsGridFill, BsList } from "react-icons/bs";
+import { FiLogOut } from "react-icons/fi";
+import { api_base_url } from '../helper';
 
 const Navbar = ({ isGridLayout, setIsGridLayout, onLogout }) => {
   const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const [setError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const avatarRef = useRef(null);
   const [isLightMode, setIsLightMode] = useState(() => {
     // Initialize theme based on localStorage or default to dark
     return localStorage.getItem("theme") === "light";
   });
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target) && 
+        avatarRef.current && 
+        !avatarRef.current.contains(event.target)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef, avatarRef]);
 
   useEffect(() => {
     // Skip data fetching if logging out
@@ -77,6 +100,10 @@ const Navbar = ({ isGridLayout, setIsGridLayout, onLogout }) => {
     setIsLightMode(!isLightMode);
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   const logout = () => {
     // Set logging out state to prevent further API calls
     setIsLoggingOut(true);
@@ -95,73 +122,152 @@ const Navbar = ({ isGridLayout, setIsGridLayout, onLogout }) => {
     window.location.href = "/login";
   };
 
+  // Custom active link style for NavLink
+  const getActiveStyle = ({ isActive }) => {
+    return isActive 
+      ? "text-[#00AEEF] font-medium relative after:content-[''] after:absolute after:w-full after:h-[2px] after:bg-[#00AEEF] after:bottom-[-4px] after:left-0"
+      : "text-inherit hover:text-[#00AEEF] relative after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-[#00AEEF] after:bottom-[-4px] after:left-0 hover:after:w-full after:transition-all after:duration-300";
+  };
+
   return (
-    <div
-      className={`navbar flex items-center justify-between px-[100px] h-[80px] ${
-        isLightMode ? "bg-[#f9f9f9] text-black" : "bg-[#141414] text-white"
+    <nav
+      className={`sticky top-0 z-[1000] flex items-center justify-between px-[5%] md:px-[8%] lg:px-[100px] h-[80px] transition-all duration-300 ${
+        isLightMode 
+          ? "bg-white text-gray-800 shadow-[0_2px_10px_rgba(0,0,0,0.1)]" 
+          : "bg-[#141414] text-white shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
       }`}
     >
-      <div className="logo">
-        <img className="w-[150px] cursor-pointer" src={logo} alt="Logo" />
+      <Link to="/" className="flex items-center">
+        <img className="w-[140px] h-auto cursor-pointer" src={logo} alt="Code IDE Logo" />
+      </Link>
+      
+      <div className="hidden md:flex items-center space-x-8">
+        <NavLink 
+          to="/" 
+          className={getActiveStyle}
+        >
+          Home
+        </NavLink>
+        <NavLink 
+          to="/about" 
+          className={getActiveStyle}
+        >
+          About
+        </NavLink>
+        <NavLink 
+          to="/contact" 
+          className={getActiveStyle}
+        >
+          Contact
+        </NavLink>
       </div>
-      <div className="links flex items-center gap-2">
-        <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-        <Link to="/contact">Contact</Link>
-        <Link to="/services">Services</Link>
+      
+      <div className="flex items-center space-x-4">
         <button
           onClick={logout}
-          className={`btnBlue ${
-            isLightMode ? "!bg-red-500 text-white" : "!bg-red-500 text-white"
-          } min-w-[120px] ml-2 hover:!bg-red-600`}
+          className="hidden md:flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md transition-all duration-200 hover:-translate-y-[2px]"
         >
-          Logout
+          <FiLogOut />
+          <span>Logout</span>
         </button>
-        <Avatar
-          onClick={() => {
-            toggleClass(".dropDownNavbar", "hidden");
-          }}
-          name={data ? data.name : "User"}
-          size="40"
-          round="50%"
-          className="cursor-pointer ml-2"
-        />
-      </div>
-      <div
-        className={`dropDownNavbar hidden absolute right-[60px] top-[80px] shadow-lg shadow-black/50 p-[10px] rounded-lg ${
-          isLightMode ? "bg-[#e5e5e5]" : "bg-[#1A1919]"
-        } w-[150px] h-[160px]`}
-      >
-        <div className="py-[10px] border-b-[1px] border-b-[#fff]">
-          <h3
-            className="text-[17px]"
-            style={{ lineHeight: 1, color: isLightMode ? "#000" : "#fff" }}
+        
+        <div className="relative">
+          <div 
+            ref={avatarRef}
+            onClick={toggleDropdown}
+            className="cursor-pointer flex items-center space-x-2 rounded-full border-2 border-transparent hover:border-[#00AEEF] transition-all duration-200 hover:scale-105"
           >
-            {data ? data.name : "User"}
-          </h3>
+            <Avatar
+              name={data ? data.name : "User"}
+              size="40"
+              round="50%"
+              className="shadow-md"
+              textSizeRatio={2.5}
+              color="#00AEEF"
+            />
+          </div>
+          
+          {isDropdownOpen && (
+            <div
+              ref={dropdownRef}
+              className={`absolute right-0 top-[55px] rounded-lg ${
+                isLightMode 
+                  ? "bg-white text-gray-800 border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.1)]" 
+                  : "bg-[#1A1919] text-white border border-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+              } w-[220px] py-2 z-10 overflow-hidden transition-all duration-200 ease-in-out animate-[fadeIn_0.2s_ease-out]`}
+              style={{
+                animation: "fadeIn 0.2s ease-out",
+              }}
+            >
+              <div className={`px-4 py-3 border-b ${isLightMode ? "border-gray-200" : "border-gray-700"}`}>
+                <h3 className="text-[15px] font-medium">
+                  {data ? data.name : "User"}
+                </h3>
+                <p className="text-[13px] text-gray-500 truncate">
+                  {data ? data.email : "user@example.com"}
+                </p>
+              </div>
+              
+              <div className="mt-1">
+                <button
+                  onClick={toggleTheme}
+                  className={`w-full text-left px-4 py-2 text-[14px] flex items-center space-x-3 hover:${
+                    isLightMode ? "bg-gray-100" : "bg-[#252525]"
+                  } transition-colors duration-150`}
+                >
+                  {isLightMode ? (
+                    <>
+                      <MdDarkMode className="text-[18px]" />
+                      <span>Dark Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <MdLightMode className="text-[18px]" />
+                      <span>Light Mode</span>
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setIsGridLayout(!isGridLayout);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-[14px] flex items-center space-x-3 hover:${
+                    isLightMode ? "bg-gray-100" : "bg-[#252525]"
+                  } transition-colors duration-150`}
+                >
+                  {isGridLayout ? (
+                    <>
+                      <BsList className="text-[18px]" />
+                      <span>List Layout</span>
+                    </>
+                  ) : (
+                    <>
+                      <BsGridFill className="text-[18px]" />
+                      <span>Grid Layout</span>
+                    </>
+                  )}
+                </button>
+                
+                <div className={`border-t ${isLightMode ? "border-gray-200" : "border-gray-700"} my-1`}></div>
+                
+                <button
+                  onClick={logout}
+                  className="w-full text-left px-4 py-2 text-[14px] flex items-center space-x-3 text-red-500 hover:bg-red-500/10 transition-colors duration-150"
+                >
+                  <FiLogOut className="text-[18px]" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-        <i
-          onClick={toggleTheme}
-          className="flex items-center gap-2 mt-3 mb-2 cursor-pointer"
-          style={{ fontStyle: "normal" }}
-        >
-          <MdLightMode className="text-[20px]" />{" "}
-          {isLightMode ? "Dark mode" : "Light mode"}
-        </i>
-        <i
-          onClick={() => setIsGridLayout(!isGridLayout)}
-          className="flex items-center gap-2 mt-3 mb-2 cursor-pointer"
-          style={{ fontStyle: "normal", color: isLightMode ? "#000" : "#fff" }}
-        >
-          <BsGridFill className="text-[20px]" />{" "}
-          {isGridLayout ? "List" : "Grid"} layout
-        </i>
       </div>
-    </div>
+    </nav>
   );
 };
 
-// Add PropTypes validation
 Navbar.propTypes = {
   isGridLayout: PropTypes.bool.isRequired,
   setIsGridLayout: PropTypes.func.isRequired,

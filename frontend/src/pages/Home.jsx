@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import{ useEffect, useState, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import ListCard from "../components/ListCard";
 import GridCard from "../components/GridCard";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const [ setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [projTitle, setProjTitle] = useState("");
   const navigate = useNavigate();
