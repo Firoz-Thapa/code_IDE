@@ -1,22 +1,18 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import codeImg from "../images/code.png";
 import { Link } from 'react-router-dom';
 
 const About = () => {
   const [isGridLayout, setIsGridLayout] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLightMode] = useState(() => {
-    // Initialize theme based on localStorage or default to dark
     return localStorage.getItem("theme") === "light";
   });
 
-  // Handle logout via Navbar
-  const handleLogout = () => {
-    // This function will be called when the user logs out from Navbar
-  };
-  
+  const handleLogout = () => {};
+
   useEffect(() => {
-    // Apply the theme to the document body (if needed)
     if (isLightMode) {
       document.body.classList.add("light-mode");
       document.body.classList.remove("dark-mode");
@@ -26,34 +22,64 @@ const About = () => {
     }
   }, [isLightMode]);
 
+  // Loading screen for 1.2s
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
+        <div className="w-10 h-10 border-4 border-gray-700 border-t-[#00AEEF] rounded-full animate-spin" />
+        <p className="text-gray-400 text-sm tracking-widest">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <>
-      <Navbar 
-        isGridLayout={isGridLayout} 
-        setIsGridLayout={setIsGridLayout} 
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up {
+          animation: fadeUp 0.6s ease both;
+        }
+        .fade-up-1 { animation-delay: 0.05s; }
+        .fade-up-2 { animation-delay: 0.15s; }
+        .fade-up-3 { animation-delay: 0.25s; }
+        .fade-up-4 { animation-delay: 0.35s; }
+      `}</style>
+
+      <Navbar
+        isGridLayout={isGridLayout}
+        setIsGridLayout={setIsGridLayout}
         onLogout={handleLogout}
       />
-      
+
       <div className="about-container px-[100px] py-[40px]">
-        <h1 className="text-4xl font-bold mb-8">About Code IDE</h1>
-        
+        <h1 className="text-4xl font-bold mb-8 fade-up fade-up-1">About Code IDE</h1>
+
         <div className="about-content flex flex-col md:flex-row gap-10">
+          {/* Left column */}
           <div className="about-text md:w-2/3">
-            <section className="mb-8">
+            <section className="mb-8 fade-up fade-up-2">
               <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
               <p className="mb-4">
-                Code IDE is designed to provide developers with a simple, intuitive, and powerful 
-                environment for writing, testing, and sharing HTML, CSS, and JavaScript code. Our 
-                platform allows you to create and save your projects, making it easy to continue 
+                Code IDE is designed to provide developers with a simple, intuitive, and powerful
+                environment for writing, testing, and sharing HTML, CSS, and JavaScript code. Our
+                platform allows you to create and save your projects, making it easy to continue
                 your work from anywhere.
               </p>
               <p>
-                Whether you are a beginner learning web development or an experienced programmer 
+                Whether you are a beginner learning web development or an experienced programmer
                 looking for a quick way to test ideas, Code IDE is built for you.
               </p>
             </section>
-            
-            <section className="mb-8">
+
+            <section className="mb-8 fade-up fade-up-3">
               <h2 className="text-2xl font-semibold mb-4">Key Features</h2>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Real-time code preview with automatic updates</li>
@@ -65,27 +91,27 @@ const About = () => {
                 <li>Simple project sharing (coming soon)</li>
               </ul>
             </section>
-            
-            <section>
+
+            <section className="fade-up fade-up-4">
               <h2 className="text-2xl font-semibold mb-4">Get Started Today</h2>
               <p className="mb-4">
-                Ready to start coding? Create a new project from the <Link to="/" className="text-[#00AEEF] hover:underline">home page</Link> or 
+                Ready to start coding? Create a new project from the{' '}
+                <Link to="/" className="text-[#00AEEF] hover:underline">home page</Link> or
                 explore some of our example projects to see what is possible.
               </p>
               <p>
-                If you have any questions or feedback, please donot hesitate to 
-                <Link to="/contact" className="text-[#00AEEF] hover:underline"> contact us</Link>.
+                If you have any questions or feedback, please do not hesitate to{' '}
+                <Link to="/contact" className="text-[#00AEEF] hover:underline">contact us</Link>.
               </p>
             </section>
           </div>
-          
-          <div className="about-sidebar md:w-1/3">
+
+          {/* Right sidebar */}
+          <div className="about-sidebar md:w-1/3 fade-up fade-up-3">
             <div className="bg-[#141414] p-6 rounded-lg shadow-lg shadow-black/50">
               <img src={codeImg} alt="Code IDE Logo" className="w-24 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-center mb-3">Code IDE</h3>
-              <p className="text-center text-gray-400 mb-4">
-                Version 1.0.0
-              </p>
+              <p className="text-center text-gray-400 mb-4">Version 1.0.0</p>
               <div className="stats grid grid-cols-2 gap-4 mb-6">
                 <div className="stat text-center">
                   <div className="stat-value text-2xl text-[#00AEEF]">HTML5</div>
@@ -104,8 +130,8 @@ const About = () => {
                   <div className="stat-label text-gray-400">Framework</div>
                 </div>
               </div>
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="btnBlue w-full text-center block py-2 hover:bg-[#0086b3] transition-colors"
               >
                 Start Coding
